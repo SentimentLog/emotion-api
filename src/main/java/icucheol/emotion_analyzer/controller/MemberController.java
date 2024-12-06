@@ -3,9 +3,13 @@ package icucheol.emotion_analyzer.controller;
 import icucheol.emotion_analyzer.dto.MemberRequestDto;
 import icucheol.emotion_analyzer.dto.MemberResponseDto;
 import icucheol.emotion_analyzer.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/members")
@@ -16,29 +20,59 @@ public class MemberController {
 
     /**
      * 회원 등록
-     * @param memberRequestDto 클라이언트 요청 데이터
-     * @return 생성된 회원 정보
      */
     @PostMapping("/register")
-    public ResponseEntity<MemberResponseDto> registerMember(@RequestBody MemberRequestDto memberRequestDto) {
+    public ResponseEntity<?> registerMember(@Valid @RequestBody MemberRequestDto memberRequestDto) {
         try {
-            // 서비스 계층에서 회원 등록 처리
             MemberResponseDto memberResponseDto = memberService.registerMember(memberRequestDto);
-            return ResponseEntity.ok(memberResponseDto); // 200 OK 응답
+            return ResponseEntity.ok(memberResponseDto);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
     /**
-     * 이메일을 기준으로 회원 정보 검색
-     * @param email 이메일 주소
-     * @return 회원 정보 또는 404 상태
+     * 이메일로 회원 정보 조회
      */
     @GetMapping("/{email}")
     public ResponseEntity<MemberResponseDto> getMemberByEmail(@PathVariable String email) {
         return memberService.findMemberByEmail(email)
-                .map(ResponseEntity::ok) // 200 OK 응답
-                .orElse(ResponseEntity.notFound().build()); // 404 Not Found 응답
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * 모든 회원 목록 조회 (관리자 전용)
+     */
+    @GetMapping
+    public ResponseEntity<List<MemberResponseDto>> getAllMembers() {
+        List<MemberResponseDto> members = memberService.findAllMembers();
+        return ResponseEntity.ok(members);
+    }
+
+    /**
+     * 회원 삭제
+     */
+    @DeleteMapping("/{email}")
+    public ResponseEntity<Void> deleteMember(@PathVariable String email) {
+        try {
+            memberService.deleteMemberByEmail(email);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * 비밀번호 변경
+     */
+    @PatchMapping("/{email}/password")
+    public ResponseEntity<Void> changePassword(@PathVariable String email, @RequestBody String newPassword) {
+        try {
+            memberService.changePassword(email, newPassword);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
