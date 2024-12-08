@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**","/api/members/**").permitAll() // 로그인 및 회원가입 허용
+                        .requestMatchers("/api/auth/**","/api/members/**", "/api-docs/**", "/swagger-ui/**").permitAll() // 로그인 및 회원가입 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
