@@ -19,7 +19,7 @@ public class SwaggerConfig {
                 .contact(new Contact()
                         .name("UICHEOL_HWANG")
                         .email("icuchoel@gmail.com")
-                        .url("hhttps://github.com/UICHEOL-HWANG")
+                        .url("https://github.com/UICHEOL-HWANG")
                 )
             );
     }
